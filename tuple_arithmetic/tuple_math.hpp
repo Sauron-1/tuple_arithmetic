@@ -89,6 +89,41 @@ TP_MAP_TERNARY_STD_FN(hypot);
 TP_MAP_TERNARY_STD_FN(fma);
 TP_MAP_TERNARY_STD_FN(lerp);
 
+// other operators
+template<tuple_like Tp>
+FORCE_INLINE constexpr auto norm(Tp&& tp) {
+    return std::sqrt(dot(std::forward<Tp>(tp), std::forward<Tp>(tp)));
+}
+
+template<size_t L, tuple_like Tp>
+FORCE_INLINE constexpr auto norm(Tp&& tp) {
+    if constexpr (L == 0) {
+        return std::tuple_size_v<std::remove_cvref_t<Tp>>;
+    }
+    else if constexpr (L == 1) {
+        return sum(abs(std::forward<Tp>(tp)));
+    }
+    else if constexpr (L == 2) {
+        return norm(tp);
+    }
+    else if constexpr (L == 3) {
+        return std::cbrt(sum(powi<3>(abs(std::forward<Tp>(tp)))));
+    }
+    else {
+        if constexpr (L % 2 == 0) {
+            return std::pow(sum(powi<L>(std::forward<Tp>(tp))), 1.0/L);
+        }
+        else {
+            return std::pow(sum(powi<L>(abs(std::forward<Tp>(tp)))), 1.0/L);
+        }
+    }
+}
+
+template<tuple_like Tp>
+FORCE_INLINE constexpr auto normalize(Tp&& tp) {
+    return tp / norm(std::forward<Tp>(tp));
+}
+
 #if defined(TP_NAMESPACE)
 }  // namespace TP_NAMESPACE
 

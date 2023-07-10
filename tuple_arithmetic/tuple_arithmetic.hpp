@@ -4,6 +4,7 @@
 #include "tpa_basic/reduce_op.hpp"
 #include "tpa_basic/binary_op.hpp"
 #include "tpa_basic/ternary_op.hpp"
+#include "tpa_basic/other.hpp"
 
 #if defined(TP_NAMESPACE)
 using TP_NAMESPACE::operator+;

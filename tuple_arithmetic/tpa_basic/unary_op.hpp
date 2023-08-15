@@ -19,6 +19,20 @@ FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tp>>::value>{});
 }
 
+// Foreach: same as unary op, but use forward_as_tuple instead of make_tuple.
+namespace detail {
+    template<typename Op, typename Tp, std::size_t...I>
+    FORCE_INLINE constexpr auto foreach(Op&& op, Tp&& tp, std::index_sequence<I...>) {
+        return TP_CONVERT(std::forward_as_tuple(op(std::get<I>(tp))...));
+    }
+}
+template<typename Op, tuple_like Tp>
+FORCE_INLINE constexpr auto foreach(Tp&& tp, Op&& op) {
+    return detail::foreach(
+            std::forward<Op>(op), std::forward<Tp>(tp),
+            std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tp>>::value>{});
+}
+
 // functions
 // (a1, a2, ...) -> (T(a1), T(a2), ...)
 template<typename T, tuple_like Tp>

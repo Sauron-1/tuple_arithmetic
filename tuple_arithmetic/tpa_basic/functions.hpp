@@ -62,6 +62,11 @@ FORCE_INLINE decltype(auto) to_array(T&& tp) {
     }
 }
 
+template<typename T, tuple_like Tp>
+FORCE_INLINE auto repeat_as(T&& t, Tp&&) {
+    return const_tuple<T&&, std::tuple_size_v<std::remove_cvref_t<Tp>>>{std::forward<T>(t)};
+}
+
 // Permutation
 template<size_t...Idx, tuple_like Tp>
 FORCE_INLINE constexpr auto permute(Tp&& tp) {

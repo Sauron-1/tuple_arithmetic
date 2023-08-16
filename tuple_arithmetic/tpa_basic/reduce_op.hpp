@@ -1,6 +1,7 @@
 #include "defines.hpp"
 #include "basics.hpp"
 #include "functions.hpp"
+#include "binary_op.hpp"
 
 #pragma once
 
@@ -79,6 +80,14 @@ FORCE_INLINE constexpr auto reduce_max(Tp&& tp) {
     return reduce(
             [](auto&& a, auto&& b) { return b > a ? b : a; },
             std::forward<Tp>(tp));
+}
+
+
+// dot product
+template<tuple_like Tp1, tuple_like Tp2>
+    requires(std::tuple_size_v<std::remove_cvref_t<Tp1>> == std::tuple_size_v<std::remove_cvref_t<Tp2>>)
+FORCE_INLINE constexpr auto dot(Tp1&& tp1, Tp2&& tp2) {
+    return sum(tp1 * tp2);
 }
 
 TP_EXIT_NS

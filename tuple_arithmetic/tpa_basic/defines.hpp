@@ -6,13 +6,15 @@
 # endif
 #endif
 
-#if defined(_MSC_VER)
-#   define FORCE_INLINE __forceinline
-#else
-#   define FORCE_INLINE inline __attribute__((always_inline))
-#   ifndef __GNUC__
-#       pragma STDC FP_CONTRACT ON
-#   endif
+#ifndef FORCE_INLINE
+#  if defined(_MSC_VER)
+#    define FORCE_INLINE __forceinline
+#  else
+#    define FORCE_INLINE inline __attribute__((always_inline))
+#    ifndef __GNUC__
+#        pragma STDC FP_CONTRACT ON
+#    endif
+#  endif
 #endif
 
 #if defined(TP_NAMESPACE)

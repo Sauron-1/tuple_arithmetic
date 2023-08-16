@@ -71,14 +71,6 @@ FORCE_INLINE constexpr auto m_fn2(Tp1&& tp1, Tm T::*member, Tp2&& tp2) {
             std::forward<Tp1>(tp1), std::forward<Tp2>(tp2));
 }
 
-
-// dot product
-template<tuple_like Tp1, tuple_like Tp2>
-    requires(std::tuple_size_v<std::remove_cvref_t<Tp1>> == std::tuple_size_v<std::remove_cvref_t<Tp2>>)
-FORCE_INLINE constexpr auto dot(Tp1&& tp1, Tp2&& tp2) {
-    return sum(tp1 * tp2);
-}
-
 // cross2: (a1, a2) x (b1, b2) = a1 * b2 - a2 * b1
 template<tuple_like Tp1, tuple_like Tp2>
     requires(std::tuple_size_v<std::remove_cvref_t<Tp1>> == 2 && std::tuple_size_v<std::remove_cvref_t<Tp2>> == 2)

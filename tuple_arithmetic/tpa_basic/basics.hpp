@@ -11,7 +11,7 @@ TP_ENTER_NS
 template<typename T, std::size_t I>
 concept has_tuple_element = requires(T t) {
     typename std::tuple_element_t<I, std::remove_cvref_t<T>>;
-    { std::get<I>(t) } -> std::convertible_to<std::tuple_element_t<I, std::remove_cvref_t<T>>>;
+    { std::get<I>(t) };
 };
 
 /**

@@ -44,7 +44,11 @@ FORCE_INLINE constexpr auto FN_NAME(Tp1&& tp1, Tp2&& tp2, Tp3&& tp3) { \
 #define TP_MAP_TERNARY_STD_FN(FN_NAME) \
     TP_MAKE_TERNARY_OP(FN_NAME, std::FN_NAME(a, b, c))
 
+template<typename T1, typename T2>
+decltype(auto) select(bool cond, T1&& if_true, T2&& if_false) {
+    return cond ? if_true : if_false;
+}
 
-TP_MAKE_TERNARY_OP(select, a ? b : c);
+TP_MAKE_TERNARY_OP(select, select(a, b, c));
 
 TP_EXIT_NS

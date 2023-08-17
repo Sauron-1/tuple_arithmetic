@@ -1,4 +1,5 @@
 #include "defines.hpp"
+#include <concepts>
 #include <tuple>
 #include <functional>
 #include <type_traits>
@@ -7,10 +8,10 @@
 
 TP_ENTER_NS
 
-template<typename T, std::size_t N>
-concept has_tuple_element = requires(std::remove_cvref_t<T> t) {
-    typename std::tuple_element_t<N, decltype(t)>;
-    { get<N>(t) } -> std::convertible_to<const std::tuple_element_t<N, decltype(t)>&>;
+template<typename T, std::size_t I>
+concept has_tuple_element = requires(T t) {
+    typename std::tuple_element_t<I, std::remove_cvref_t<T>>;
+    { std::get<I>(t) } -> std::convertible_to<std::tuple_element_t<I, std::remove_cvref_t<T>>>;
 };
 
 /**
@@ -27,8 +28,8 @@ concept tuple_like = requires(std::remove_cvref_t<T> t) {
         std::tuple_size<decltype(t)>,
         std::integral_constant<std::size_t, std::tuple_size_v<decltype(t)>>
     >;
-} && []<std::size_t...N>(std::index_sequence<N...>) {
-    return (has_tuple_element<T, N> && ...);
+} && []<std::size_t...I>(std::index_sequence<I...>) {
+    return (has_tuple_element<T, I> && ...);
 }(std::make_index_sequence<std::tuple_size_v<std::remove_cvref_t<T>>>{});
 
 /**
@@ -73,5 +74,8 @@ FORCE_INLINE constexpr void constexpr_for(Fn&& fn, Args&&...args) {
     }
 }
 #endif
+
+template<typename T> struct tpa_tuple_size : public std::tuple_size<std::remove_cvref_t<T>> {};
+template<typename T> static constexpr size_t tpa_tuple_size_v = tpa_tuple_size<T>::value;
 
 TP_EXIT_NS

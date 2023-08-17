@@ -8,7 +8,8 @@ TP_ENTER_NS
 
 // Binary operation
 namespace detail {
-    template<typename Op, typename T1, typename T2, std::size_t...I>
+    template<typename Op, tuple_like T1, tuple_like T2, std::size_t...I>
+        requires(tpa_tuple_size_v<T1> == tpa_tuple_size_v<T2>)
     FORCE_INLINE constexpr auto apply_binary_op_impl(Op&& op, T1&& t1, T2&& t2, std::index_sequence<I...>) {
         return TP_CONVERT(std::make_tuple(op(
                     std::get<I>(std::forward<T1>(t1)),
@@ -18,11 +19,13 @@ namespace detail {
 template<typename Op, typename T1, typename T2>
     requires( tuple_like<T1> || tuple_like<T2> )
 FORCE_INLINE constexpr auto apply_binary_op(Op&& op, T1&& v1, T2&& v2) {
-    auto tp1 = detail::broadcast<T2>(std::forward<T1>(v1));
-    auto tp2 = detail::broadcast<T1>(std::forward<T2>(v2));
+    decltype(auto) tp1 = detail::broadcast<T2>(std::forward<T1>(v1));
+    decltype(auto) tp2 = detail::broadcast<T1>(std::forward<T2>(v2));
     return detail::apply_binary_op_impl(
-            std::forward<Op>(op), tp1, tp2,
-            std::make_index_sequence<std::tuple_size_v<decltype(tp1)>>{});
+            std::forward<Op>(op),
+            std::forward<decltype(tp1)>(tp1),
+            std::forward<decltype(tp2)>(tp2),
+            std::make_index_sequence<tpa_tuple_size_v<decltype(tp1)>>{});
 }
 
 #define TP_MAKE_BINARY_OP(FN_NAME, EXPR) \

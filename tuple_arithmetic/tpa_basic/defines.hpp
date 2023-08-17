@@ -11,9 +11,6 @@
 #    define FORCE_INLINE __forceinline
 #  else
 #    define FORCE_INLINE inline __attribute__((always_inline))
-#    ifndef __GNUC__
-#        pragma STDC FP_CONTRACT ON
-#    endif
 #  endif
 #endif
 

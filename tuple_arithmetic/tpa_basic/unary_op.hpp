@@ -7,7 +7,7 @@ TP_ENTER_NS
 
 // Unary operation
 namespace detail {
-    template<typename Op, typename Tp, std::size_t...I>
+    template<typename Op, tuple_like Tp, std::size_t...I>
     FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp, std::index_sequence<I...>) {
         return TP_CONVERT(std::make_tuple(op(std::get<I>(tp))...));
     }

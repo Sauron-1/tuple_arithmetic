@@ -1,14 +1,14 @@
-# Tuple Algebra
+# Tuple Arithmetic
 
-This header-only library add arithmetic operations to tuple-like objects. The header `tuple_arithmetic.hpp` provides arithmetic operators and some other operators. `tuple_math.hpp` provide overloaded `cmath` functions and optional comparison operators. The library uses C++20 features.
+This header-only library provides additional functionality to tuple-like objects. The header `tuple_arithmetic.hpp` provides arithmetic operators and some others. `tuple_math.hpp` provides overloaded `cmath` functions and optional comparison operators. The library uses C++20 features.
 
 ## Macros
 By default all functions are provided in namespace `tpa`, but this can be changed by defining `TP_NAMESPACE` to specify the namespace name, or by defining `TP_NO_NAMESPACE` to not use a namespace. Since the comparison operators will change standard behavior, this operators must be explicitly imported via `using operator#`, or use the macro `TP_USE_OPS`. Alternatively you can also defile `TP_DEFAULT_USE_OPS` before including the header to use them by default.
 
 For all the functions and operators, if the return value is a tuple with all elements having the same non-reference type, the returned tuple will be automatically converted to `std::array`. This behavior can be disabled by defining `TP_DONOT_CONVERT`, then all functions will return a `std::tuple`.
 
-## Promoting scalars
-For binary and ternary operators, non-tuple operants will be automatically promoted into a tuple-like object (`tpa::const_tuple`). Note that tuples with different size will cause deduction failure instead of a promotion.
+## Broadcasting scalars
+For binary and ternary operators, non-tuple operants will be automatically broadcast into a tuple-like object (`tpa::const_tuple`). Note that tuples with different size will cause deduction failure instead of a broadcast.
 
 ## Unary operators
 - `tpa::apply_unary_op(Op&& op, tuple_like tp)`: `(a1, a2, ...)` -> `(op(a1), op(a2), ...)`
@@ -33,7 +33,7 @@ auto a = std::make_tuple(1, 2.0),
      b = std::array<float, 2>(3.0, 4.0);
 auto c = a + b;  // std::tuple<float, double>{ 4.0, 6.0 }
 ```
-- `tpa::index(tuple_like&&, index)`, `tpa::invoke(tuple_like&&, args)`: promote `index`/`args` to tuple-like, than call `operator[]`/`operator()` for each operant pairs. Example:
+- `tpa::index(tuple_like&&, index)`, `tpa::invoke(tuple_like&&, args)`: broadcast `index`/`args` to tuple-like, than call `operator[]`/`operator()` for each operant pairs. Example:
 ```cpp
 auto a = std::make_tuple( std::array{1, 2}, std::array{3, 4} );
 auto b = tpa::index(a, make_tuple(0, 1))/  // std::array<int, 2>{ 0, 4 };
@@ -54,7 +54,7 @@ auto e = tpa::cross(make_tuple(1, 2, 3.0), make_tuple(2, 3, 4.0));
 
 ## Ternary operators
 - `tpa::apply_ternary_op(Op&& op, T1&& tp1, T2&& tp2, T3&& tp3)`: either `T1`, `T2`, or `T3` must be tuple-like.
-`tpa::select(tuple_like cond, if_true, if_false)`: works like `cond ? if_true : if_false`. The last two operants will be promoted. Example:
+`tpa::select(tuple_like cond, if_true, if_false)`: works like `cond ? if_true : if_false`. The last two operants will be broadcast. Example:
 ```cpp
 auto a = tpa::select(array{0, 1}, 0.0, array{1, 2});  // array<double, 2>{ 1.0, 0.0 }
 ```

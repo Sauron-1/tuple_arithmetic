@@ -1,5 +1,6 @@
 #include "defines.hpp"
 #include "basics.hpp"
+#include <concepts>
 
 #pragma once
 
@@ -23,7 +24,7 @@ FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
 namespace detail {
     template<typename Op, typename Tp, std::size_t...I>
     FORCE_INLINE constexpr auto foreach(Op&& op, Tp&& tp, std::index_sequence<I...>) {
-        return TP_CONVERT(std::forward_as_tuple(op(std::get<I>(tp))...));
+        return TP_CONVERT(std::forward_as_tuple(op(std::get<I>(std::forward<Tp>(tp)))...));
     }
 }
 template<typename Op, tuple_like Tp>
@@ -35,11 +36,25 @@ FORCE_INLINE constexpr auto foreach(Tp&& tp, Op&& op) {
 
 // functions
 // (a1, a2, ...) -> (T(a1), T(a2), ...)
+template<typename T, typename T0>
+    requires( std::convertible_to<T0, T>)
+FORCE_INLINE constexpr auto cast(T0&& v) {
+    return T(v);
+}
 template<typename T, tuple_like Tp>
+    requires( !std::convertible_to<Tp, T> )
 FORCE_INLINE constexpr auto cast(Tp&& tp) {
     return apply_unary_op(
-            [](auto&& v) { return T(v); },
+            [](auto&& v) { return cast<T>(v); },
             std::forward<Tp>(tp));
+}
+
+template<size_t Idx, tuple_like Tp>
+FORCE_INLINE constexpr auto vget(Tp&& tp) {
+    using std::get;
+    return foreach(
+            std::forward<Tp>(tp),
+            [](auto&& v) -> decltype(auto) { return get<Idx>(std::forward<decltype(v)>(v)); });
 }
 
 // (a1, a2, ...) -> (a1.m, a2.m, ...)

@@ -5,19 +5,24 @@ This header-only library provides additional functionality to tuple-like objects
 ## Macros
 By default all functions are provided in namespace `tpa`, but this can be changed by defining `TP_NAMESPACE` to specify the namespace name, or by defining `TP_NO_NAMESPACE` to not use a namespace. Since the comparison operators will change standard behavior, this operators must be explicitly imported via `using operator#`, or use the macro `TP_USE_OPS`. Alternatively you can also defile `TP_DEFAULT_USE_OPS` before including the header to use them by default.
 
-For all the functions and operators, if the return value is a tuple with all elements having the same non-reference type, the returned tuple will be automatically converted to `std::array`. This behavior can be disabled by defining `TP_DONOT_CONVERT`, then all functions will return a `std::tuple`.
+For all the functions and operators, if the return value is a tuple with all elements having the same non-reference type, the returned tuple will be automatically converted to `std::array`. This behavior can be disabled by defining `TP_DONOT_CONVERT` so that all functions will return a `std::tuple`.
 
 ## Broadcasting scalars
-For binary and ternary operators, non-tuple operants will be automatically broadcast into a tuple-like object (`tpa::const_tuple`). Note that tuples with different size will cause deduction failure instead of a broadcast.
+For binary and ternary operators, non-tuple operants will be automatically broadcast into a tuple-like object (`tpa::const_tuple`). Note that tuples with different size will cause deduction failure instead of a broadcast. To manually broadcast an object, use `tpa::repeat_as(src, tuple_like_obj)`.
 
 ## Unary operators
-- `tpa::apply_unary_op(Op&& op, tuple_like tp)`: `(a1, a2, ...)` -> `(op(a1), op(a2), ...)`
+- `tpa::apply_unary_op(Op&& op, tuple_like&& tp)`: `(a1, a2, ...)` -> `(op(a1), op(a2), ...)`
+- `tpa::foreach(tuple_like&& tp, Op&& op)`: `(a1, a2, ...)`: dose the same thing as `tpa::apply_unary_op`, but use `std::forward_as_tuple` instead of `std::make_tuple` to create return value.
 - `operator-`: negative operator.
-- `tpa::cast<TYPE>(tuple_like&&)`: cast all element of tuple\_like into TYPE.  Example:
+- `tpa::cast<TYPE>(tuple_like&&)`: cast all element of tuple\_like into TYPE. Example:
 ```cpp
 auto a = std::make_tuple(1, 2.0);
 auto b = -a;  // std::tuple<int, double>{ -1, -2.0 }
 auto c = tpa::cast<int>(a);  // std::array<int, 2>{ 1, 2 }
+```
+- `tpa::vget<size_t idx>(tuple_like&&)`: apply `get<idx>` to each element. Example:
+```cpp
+auto a = tpa::vget<1>(std::tuple{std::array{1, 2}, std::tuple{1.0, 2.0}});  // std::tuple<int, double>{ 2, 2.0 }
 ```
 - `tpa::firstN<size_t N>(tuple_like&&)`: select the first N elements. Example:
 ```cpp
@@ -27,7 +32,7 @@ auto b = tpa::firstN<2>(a);  // std::array<int, 2>{ 1, 2 }
 
 ## Binary operators
 - `tpa::apply_binary_op(Op&& op, T1&& tp1, T2&& tp2)`: either `T1` or `T2` must be tuple-like.
-- Arithmetic operators. Example:
+- Arithmetic operators, including "+", "-", "\*", and "/". Example:
 ```cpp
 auto a = std::make_tuple(1, 2.0),
      b = std::array<float, 2>(3.0, 4.0);

@@ -64,7 +64,12 @@ TP_MAP_UNARY_STD_FN(rint);
 TP_MAP_UNARY_STD_FN(lrint);
 TP_MAP_UNARY_STD_FN(llrint);
 
+TP_MAKE_UNARY_OP(operator~, ~a);
+TP_MAKE_UNARY_OP(operator!, !a);
+
 // binary
+TP_MAKE_BINARY_OP(operator|, a | b);
+TP_MAKE_BINARY_OP(operator&, a & b);
 TP_MAKE_BINARY_OP(operator<, a < b);
 TP_MAKE_BINARY_OP(operator<=, a <= b);
 TP_MAKE_BINARY_OP(operator>, a > b);
@@ -128,6 +133,10 @@ FORCE_INLINE constexpr auto normalize(Tp&& tp) {
 }  // namespace TP_NAMESPACE
 
 #define TP_USE_OPS \
+using TP_NAMESPACE::operator~; \
+using TP_NAMESPACE::operator!; \
+using TP_NAMESPACE::operator|; \
+using TP_NAMESPACE::operator&; \
 using TP_NAMESPACE::operator<; \
 using TP_NAMESPACE::operator>; \
 using TP_NAMESPACE::operator==; \

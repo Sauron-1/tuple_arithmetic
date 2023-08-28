@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(tuple_arithmetic INTERFACE)
 target_include_directories(
     tuple_arithmetic INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tuple_arithmetic>
     $<INSTALL_INTERFACE:include/tuple_arithmetic>
 )
 

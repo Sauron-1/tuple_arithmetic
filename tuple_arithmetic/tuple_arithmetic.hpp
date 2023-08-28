@@ -2,8 +2,8 @@
 #define TUPLE_ARITHMETIC
 
 #include "tpa_basic/const_tuple.hpp"
-#include "tpa_basic/basics.hpp"
 #include "tpa_basic/ptr_tuple.hpp"
+#include "tpa_basic/basics.hpp"
 #include "tpa_basic/assign.hpp"
 #include "tpa_basic/unary_op.hpp"
 #include "tpa_basic/binary_op.hpp"

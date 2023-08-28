@@ -19,7 +19,7 @@ TEST_CASE( "ptr tuple", "[ptr tuple]" ) {
     }
 
     SECTION( "assign with tuple" ) {
-        pt = std::make_tuple(1, 2.0, 3.0f);
+        tpa::assign(pt, std::make_tuple(1, 2.0, 3.0f));
         REQUIRE(pt[0] == 1.0);
         REQUIRE(pt[1] == 2.0);
         REQUIRE(pt[2] == 3.0);

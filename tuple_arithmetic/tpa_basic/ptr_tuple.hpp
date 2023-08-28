@@ -1,8 +1,11 @@
 #include "defines.hpp"
-#include "basics.hpp"
 #include <type_traits>
+#include <concepts>
+#include <array>
 
 #pragma once
+
+using std::size_t;
 
 TP_ENTER_NS
 // ptr_tuple: wrap a pointer as an std::array
@@ -62,15 +65,6 @@ class ptr_tuple {
             return *this;
         }
 
-        template<tuple_like Tp>
-        FORCE_INLINE auto operator=(Tp&& other) {
-            constexpr_for<0, N, 1>( [this](auto I, Tp&& o) {
-                constexpr auto i = decltype(I)::value;
-                m_data[i] = std::get<i>(o);
-            }, std::forward<Tp>(other));
-            return *this;
-        }
-
     private:
         T* m_data;
 
@@ -104,6 +98,12 @@ namespace std {
     template<size_t idx, typename T, size_t N>
         requires (idx < N)
     FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>& pt) {
+        return pt[idx];
+    }
+
+    template<size_t idx, typename T, size_t N>
+        requires (idx < N)
+    FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>&& pt) {
         return pt[idx];
     }
 

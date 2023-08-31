@@ -10,11 +10,13 @@ TP_ENTER_NS
 namespace detail {
     template<typename Op, tuple_like Tp, std::size_t...I>
     FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp, std::index_sequence<I...>) {
-        return TP_CONVERT(std::make_tuple(op(std::get<I>(tp))...));
+        using std::get;
+        return TP_CONVERT(std::make_tuple(op(get<I>(tp))...));
     }
 }
 template<typename Op, tuple_like Tp>
 FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
+    using std::get;
     return detail::apply_unary_op(
             std::forward<Op>(op), std::forward<Tp>(tp),
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tp>>::value>{});
@@ -24,7 +26,7 @@ FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
 namespace detail {
     template<typename Op, typename Tp, std::size_t...I>
     FORCE_INLINE constexpr auto foreach(Op&& op, Tp&& tp, std::index_sequence<I...>) {
-        return TP_CONVERT(std::forward_as_tuple(op(std::get<I>(std::forward<Tp>(tp)))...));
+        return TP_CONVERT(std::forward_as_tuple(op(get<I>(std::forward<Tp>(tp)))...));
     }
 }
 template<typename Op, tuple_like Tp>

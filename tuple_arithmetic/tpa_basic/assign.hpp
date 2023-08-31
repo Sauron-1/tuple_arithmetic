@@ -44,6 +44,7 @@ namespace detail {
 template<typename T1, typename T2>
     requires( detail::can_assign<T1, T2> )
 FORCE_INLINE constexpr auto assign(T1&& t1, T2&& t2) {
+    using std::get;
     if constexpr (detail::can_direct_assign<T1, T2>) {
         t1 = t2;
     }

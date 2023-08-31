@@ -67,6 +67,12 @@ FORCE_INLINE auto repeat_as(T&& t, Tp&&) {
     return const_tuple<T&&, std::tuple_size_v<std::remove_cvref_t<Tp>>>{std::forward<T>(t)};
 }
 
+template<typename T, typename To>
+    requires( not tuple_like<To> and std::is_convertible_v<std::remove_cvref_t<T>, std::remove_cvref_t<To>> )
+FORCE_INLINE auto repeat_as(T&& t, To&&) {
+    return std::remove_cvref_t<To>(std::forward<T>(t));
+}
+
 // Permutation
 template<size_t...Idx, tuple_like Tp>
 FORCE_INLINE constexpr auto permute(Tp&& tp) {

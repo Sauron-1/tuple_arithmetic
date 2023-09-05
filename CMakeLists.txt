@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(tuple_arithmetic)
 
 option(BUILD_TESTS "Build tests" ON)
@@ -12,6 +12,20 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tuple_arithmetic>
     $<INSTALL_INTERFACE:include/tuple_arithmetic>
 )
+
+# Find xsimd or download from GitHub
+find_package(xsimd QUIET)
+if(NOT xsimd_FOUND)
+    message(STATUS "xsimd not found. Downloading from github...")
+    include(FetchContent)
+    FetchContent_Declare(
+        xsimd
+        GIT_REPOSITORY https://github.com/xtensor-stack/xsimd.git
+        GIT_TAG        v11.1.0
+    )
+    FetchContent_MakeAvailable(xsimd)
+endif()
+#target_link_libraries(tuple_arithmetic INTERFACE xsimd)
 
 if(BUILD_TESTS)
     enable_testing()

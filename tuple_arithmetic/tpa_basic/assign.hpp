@@ -50,12 +50,12 @@ FORCE_INLINE constexpr auto assign(T1&& t1, T2&& t2) {
     }
     else if constexpr (detail::can_assign_tp_tp<T1, T2>) {
         constexpr_for<0, std::tuple_size_v<std::remove_reference_t<T1>>, 1>( [](auto I, auto&& v1, auto&& v2) {
-            assign(get<I>(std::forward<decltype(v1)>(v1)), get<I>(std::forward<decltype(v2)>(v2)));
+            tpa::assign(get<I>(std::forward<decltype(v1)>(v1)), get<I>(std::forward<decltype(v2)>(v2)));
         }, std::forward<T1>(t1), std::forward<T2>(t2));
     }
     else if constexpr (detail::can_assign_tp_val<T1, T2>) {
         constexpr_for<0, std::tuple_size_v<std::remove_reference_t<T1>>, 1>( [](auto I, auto&& v1, auto&& v2) {
-            assign(get<I>(std::forward<decltype(v1)>(v1)), std::forward<decltype(v2)>(v2));
+            tpa::assign(get<I>(std::forward<decltype(v1)>(v1)), std::forward<decltype(v2)>(v2));
         }, std::forward<T1>(t1), std::forward<T2>(t2));
     }
     else {

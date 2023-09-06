@@ -25,11 +25,13 @@ if(NOT xsimd_FOUND)
     )
     FetchContent_MakeAvailable(xsimd)
 endif()
-#target_link_libraries(tuple_arithmetic INTERFACE xsimd)
+# Work around for xsimd generating "-lxsimd" flag
+target_include_directories(tuple_arithmetic INTERFACE ${xsimd_INCLUDE_DIRS})
 
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+    add_subdirectory(simd_tests)
 endif()
 
 target_compile_features(tuple_arithmetic INTERFACE cxx_std_20)

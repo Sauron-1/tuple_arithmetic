@@ -42,21 +42,46 @@ FORCE_INLINE constexpr auto to_array_bool(const xsimd::batch_bool<T, A>& bsimd) 
 template<typename T>
 static inline constexpr bool is_batch_or_bb = xsimd::is_batch<T>::value or xsimd::is_batch_bool<T>::value;
 
+template<tuple_like Tp, typename T> struct is_same_sized : std::false_type {};
+template<tuple_like Tp, typename T, typename A> struct is_same_sized<Tp, xsimd::batch<T, A>> {
+    using type = bool;
+    constexpr static bool value = simd_same_size_v<Tp, T, A>;
+};
+template<tuple_like Tp, typename T, typename A> struct is_same_sized<Tp, xsimd::batch_bool<T, A>> {
+    using type = bool;
+    constexpr static bool value = simd_same_size_v<Tp, T, A>;
+};
+template<tuple_like Tp, typename T>
+static inline constexpr bool is_same_sized_v = is_same_sized<Tp, T>::value;
+
 // assign
+// Declare three same versions instead of use constrain to avoid ambiguous
 template<tuple_like Tp, typename T, typename A>
     requires( simd_same_size_v<Tp, T, A> )
 FORCE_INLINE constexpr auto assign(Tp&& tp, const xsimd::batch<T, A>& simd) {
-    tpa::assign(std::forward<Tp>(tp), to_array(simd));
+    const T* ptr = reinterpret_cast<const T*>(&simd);
+    tpa::constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
+        constexpr size_t i = decltype(I)::value;
+        std::get<I>(std::forward<Tp>(tp)) = ptr[i];
+    });
 }
 template<tuple_like Tp, typename T, typename A>
     requires( simd_same_size_v<Tp, T, A> )
 FORCE_INLINE constexpr auto assign(Tp&& tp, xsimd::batch<T, A>&& simd) {
-    tpa::assign(std::forward<Tp>(tp), to_array(simd));
+    const T* ptr = reinterpret_cast<const T*>(&simd);
+    tpa::constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
+        constexpr size_t i = decltype(I)::value;
+        std::get<I>(std::forward<Tp>(tp)) = ptr[i];
+    });
 }
 template<tuple_like Tp, typename T, typename A>
     requires( simd_same_size_v<Tp, T, A> )
 FORCE_INLINE constexpr auto assign(Tp&& tp, xsimd::batch<T, A>& simd) {
-    tpa::assign(std::forward<Tp>(tp), to_array(simd));
+    const T* ptr = reinterpret_cast<const T*>(&simd);
+    tpa::constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
+        constexpr size_t i = decltype(I)::value;
+        std::get<I>(std::forward<Tp>(tp)) = ptr[i];
+    });
 }
 
 template<tuple_like Tp, typename T, typename A>
@@ -65,28 +90,52 @@ FORCE_INLINE constexpr auto assign(xsimd::batch<T, A>& simd, Tp&& tp) {
     simd = to_simd<T>(tp);
 }
 
-
-// binary op
-template<typename Op, tuple_like Tp, typename T, typename A>
-    requires( simd_same_size_v<Tp, T, A> )
-FORCE_INLINE constexpr auto apply_binary_op(Op&& op, Tp&& tp, xsimd::batch<T, A>& simd) {
-    using type = final_type_simd<std::remove_cvref_t<Tp>, T, A>;
-    using simd_t = std::remove_cvref_t<decltype(to_simd<type>(simd))>;
-    if constexpr (is_batch_or_bb<simd_t> and std::invocable<Op, simd_t, simd_t>)
-        return op(to_simd<type>(std::forward<Tp>(tp)), to_simd<type>(simd));
-    else
-        return op(std::forward<Tp>(tp), to_array(simd));
+template<typename T1, typename A1, typename T2,  typename A2>
+    requires( not std::is_same_v<T1, T2> )
+FORCE_INLINE constexpr auto assign(xsimd::batch<T1, A1>& s1, const xsimd::batch<T2, A2>& s2) {
+    constexpr size_t N = sizeof(s2) / sizeof(T2);
+    alignas(sizeof(s2)) std::array<T2, N> arr;
+    s2.store_aligned(arr.data());
+    alignas(sizeof(s1)) auto arr1 = cast<std::remove_cvref_t<T1>>(arr);
+    s1 = xsimd::batch<T1, A1>::load_aligned(arr1.data());
 }
 
-template<typename Op, tuple_like Tp, typename T, typename A>
-    requires( simd_same_size_v<Tp, T, A> )
-FORCE_INLINE constexpr auto apply_binary_op(Op&& op, xsimd::batch<T, A>& simd, Tp&& tp) {
-    using type = final_type_simd<std::remove_cvref_t<Tp>, T, A>;
-    using simd_t = std::remove_cvref_t<decltype(to_simd<type>(simd))>;
-    if constexpr (is_batch_or_bb<simd_t> and std::invocable<Op, simd_t, simd_t>)
-        return op(simd, to_simd<type>(std::forward<Tp>(tp)));
-    else
-        return op(to_array(simd), std::forward<Tp>(tp));
+
+// binary op
+namespace detail {
+template<typename Op, typename T1, typename T2>
+    requires( is_batch_or_bb<std::remove_cvref_t<T1>> or is_batch_or_bb<std::remove_cvref_t<T2>> )
+FORCE_INLINE constexpr auto simd_apply_binary_op(Op&& op, T1&& v1, T2&& v2) {
+    using type1 = std::remove_cvref_t<T1>;
+    using type2 = std::remove_cvref_t<T2>;
+    if constexpr (is_batch_or_bb<type1>) {
+        using type = typename type1::value_type;
+        using simd_t = std::remove_cvref_t<decltype(to_simd<type>(v2))>;
+        if constexpr (is_batch_or_bb<simd_t> and std::invocable<Op, type1, simd_t>)
+            return op(std::forward<T1>(v1), to_simd<type>(std::forward<T2>(v2)));
+        else
+            return op(to_array(std::forward<T1>(v1)), to_array(std::forward<T2>(v2)));
+    }
+    else {
+        using type = typename type2::value_type;
+        using simd_t = std::remove_cvref_t<decltype(to_simd<type>(v1))>;
+        if constexpr (is_batch_or_bb<simd_t> and std::invocable<Op, simd_t, type2>)
+            return op(to_simd<type>(std::forward<T1>(v1)), std::forward<T2>(v2));
+        else
+            return op(to_array(std::forward<T1>(v1)), to_array(std::forward<T2>(v2)));
+    }
+}
+}
+
+template<typename Op, typename T1, typename T2>
+    requires( (tuple_like<T1> or tuple_like<T2>) &&
+              ( (tuple_like<T1> and (is_same_sized_v<T1, std::remove_cvref_t<T2>>)) or
+                (tuple_like<T2> and (is_same_sized_v<T2, std::remove_cvref_t<T1>>))))
+FORCE_INLINE constexpr auto apply_binary_op(Op&& op, T1&& v1, T2&& v2) {
+    return detail::simd_apply_binary_op(
+            std::forward<Op>(op),
+            std::forward<T1>(v1),
+            std::forward<T2>(v2));
 }
 
 // dot product
@@ -230,6 +279,20 @@ FORCE_INLINE constexpr auto operator~(const xsimd::batch_bool<T, A>& b) {
     constexpr size_t size = xsimd::batch_bool<T, A>::size;
     return xsimd::batch_bool<T, A>::from_mask(~b.mask() & (1ull >> (64-size)));
 }
+
+
+#define TPA_MAP_SIMD_BINARY_OP(NAME, EXPR) \
+template<typename T1, typename A1, typename T2, typename A2> \
+    requires( not std::is_same_v<T1, T2> ) \
+FORCE_INLINE constexpr auto NAME(const xsimd::batch<T1, A1>& a, const xsimd::batch<T2, A2>& b) { \
+    return detail::simd_apply_binary_op([](auto a, auto b) { return (EXPR); }, a, b); \
+}
+
+TPA_MAP_SIMD_BINARY_OP(operator+, a+b);
+TPA_MAP_SIMD_BINARY_OP(operator-, a+b);
+TPA_MAP_SIMD_BINARY_OP(operator*, a+b);
+TPA_MAP_SIMD_BINARY_OP(operator/, a+b);
+TPA_MAP_SIMD_BINARY_OP(dot, dot(a, b));
 }
 
 namespace xsimd {

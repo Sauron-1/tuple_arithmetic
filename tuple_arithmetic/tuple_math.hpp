@@ -8,6 +8,7 @@
  */
 #include <cmath>
 #include "tuple_arithmetic.hpp"
+#include "tpa_simd/xsimd_math.hpp"
 
 #pragma once
 

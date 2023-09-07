@@ -1,4 +1,5 @@
 #include <concepts>
+#include <type_traits>
 #include <xsimd/xsimd.hpp>
 #include "../tpa_basic/basics.hpp"
 #include "xsimd_cast.hpp"
@@ -165,25 +166,43 @@ FORCE_INLINE constexpr auto dot(const xsimd::batch<T1, A1>& simd1, const xsimd::
 }
 
 // select
-template<typename T1, typename T2> struct can_simd_select : std::false_type {};
-template<tuple_like T1, typename T, typename A> struct can_simd_select<T1, xsimd::batch<T, A>> {
-    using type = bool;
-    static constexpr bool value = simd_same_size_v<T1, T, A>;
-};
-template<typename T1, typename T, typename A> struct can_simd_select<T1, xsimd::batch<T, A>> {
-    using type = bool;
-    static constexpr bool value = std::is_convertible_v<T1, T>;
-};
-template<typename T1, typename A1, typename T2, typename A2>
-struct can_simd_select<xsimd::batch<T1, A1>, xsimd::batch<T2, A2>> : std::true_type {};
+namespace internal {
+template<typename T> struct tp_simd_size : std::integral_constant<size_t, 0> {};
+template<tuple_like T> struct tp_simd_size<T> : std::tuple_size<T> {};
+template<typename T, typename A> struct tp_simd_size<xsimd::batch<T, A>> : std::integral_constant<size_t, xsimd::batch<T, A>::size> {};
+template<typename T, typename A> struct tp_simd_size<xsimd::batch_bool<T, A>> : std::integral_constant<size_t, xsimd::batch<T, A>::size> {};
+template<typename T> constexpr inline static size_t tp_simd_size_v = tp_simd_size<T>::value;
 
-template<typename T1, typename T2>
-constexpr inline static bool can_simd_select_v = can_simd_select<std::remove_cvref_t<T1>, std::remove_cvref_t<T2>>::value;
+template<typename _T1, typename _T2, typename _T3>
+constexpr static inline bool can_simd_select() {
+    using T1 = std::remove_cvref_t<_T1>;
+    using T2 = std::remove_cvref_t<_T2>;
+    using T3 = std::remove_cvref_t<_T3>;
+
+    if constexpr (not (xsimd::is_batch_bool<T1>::value or is_batch_or_bb<T2> or is_batch_or_bb<T3>))
+        return false;
+    else {
+        constexpr size_t s1 = tp_simd_size_v<T1>;
+        constexpr size_t s2 = tp_simd_size_v<T2>;
+        constexpr size_t s3 = tp_simd_size_v<T3>;
+        if constexpr (s1 != 0 and s2 != 0 and s1 != s2)
+            return false;
+        if constexpr (s1 != 0 and s3 != 0 and s1 != s3)
+            return false;
+        if constexpr (s3 != 0 and s2 != 0 and s3 != s2)
+            return false;
+        return true;
+    }
+}
+
+template<typename T1, typename T2, typename T3>
+constexpr static inline bool can_simd_select_v = can_simd_select<T1, T2, T3>();
+
+}
 
 namespace detail {
 template<typename T1, typename T2, typename T3>
-    requires( (tuple_like<T1> or xsimd::is_batch_bool<std::remove_cvref_t<T1>>::value) and
-              (can_simd_select_v<T2, T3> or can_simd_select_v<T3, T2>) )
+    requires( internal::can_simd_select_v<T1, T2, T3> )
 FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
     using type = final_type_of<std::remove_cvref_t<T2>, std::remove_cvref_t<T3>>;
     if constexpr (xsimd::is_batch<std::remove_cvref_t<T2>>::value) {
@@ -230,8 +249,7 @@ FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
 
 template<typename T1, typename T2, typename T3>
     requires( (tuple_like<T1> || tuple_like<T2> || tuple_like<T3>) and  // to override default one
-              (tuple_like<T1> or xsimd::is_batch_bool<std::remove_cvref_t<T1>>::value) and
-              (can_simd_select_v<T2, T3> or can_simd_select_v<T3, T2>) )
+              internal::can_simd_select_v<T1, T2, T3> )
 FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
     return detail::select(
             std::forward<T1>(v1),
@@ -241,8 +259,7 @@ FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
 
 template<typename T1, typename T2, typename T3>
     requires( (not (tuple_like<T1> || tuple_like<T2> || tuple_like<T3>)) and
-              (tuple_like<T1> or xsimd::is_batch_bool<std::remove_cvref_t<T1>>::value) and
-              (can_simd_select_v<T2, T3> or can_simd_select_v<T3, T2>) )
+              internal::can_simd_select_v<T1, T2, T3> )
 FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
     return detail::select(
             std::forward<T1>(v1),

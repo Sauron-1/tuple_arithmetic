@@ -40,8 +40,15 @@ FORCE_INLINE constexpr auto FN_NAME(Tp1&& tp1, Tp2&& tp2) { \
 
 #define TP_MAP_BINARY_FN(FN_NAME) \
     TP_MAKE_BINARY_OP(FN_NAME, FN_NAME(a, b))
+
 #define TP_MAP_BINARY_STD_FN(FN_NAME) \
-    TP_MAKE_BINARY_OP(FN_NAME, std::FN_NAME(a, b))
+template<typename Tp1, typename Tp2> \
+    requires(tuple_like<Tp1> || tuple_like<Tp2>) \
+FORCE_INLINE constexpr auto FN_NAME(Tp1&& tp1, Tp2&& tp2) { \
+    return apply_binary_op( \
+            [](auto&& a, auto&& b) { using std::FN_NAME; return (FN_NAME(a, b)); }, \
+            std::forward<Tp1>(tp1), std::forward<Tp2>(tp2)); \
+}
 
 TP_MAKE_BINARY_OP(operator+, a + b);
 TP_MAKE_BINARY_OP(operator-, a - b);

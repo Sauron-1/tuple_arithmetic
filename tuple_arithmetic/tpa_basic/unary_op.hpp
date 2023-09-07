@@ -79,7 +79,12 @@ FORCE_INLINE constexpr auto FN_NAME(Tp&& tp) { \
     TP_MAKE_UNARY_OP(FN_NAME, FN_NAME(a))
 
 #define TP_MAP_UNARY_STD_FN(FN_NAME) \
-    TP_MAKE_UNARY_OP(FN_NAME, std::FN_NAME(a))
+template<tuple_like Tp> \
+FORCE_INLINE constexpr auto FN_NAME(Tp&& tp) { \
+    return apply_unary_op( \
+            [](auto&& a) { using std::FN_NAME; return (FN_NAME(a)); }, \
+            std::forward<Tp>(tp)); \
+}
 
 #define TP_MAP_METHOD(FN_NAME) \
 template<tuple_like Tp, typename...T> \

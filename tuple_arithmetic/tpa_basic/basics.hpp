@@ -75,7 +75,10 @@ FORCE_INLINE constexpr void constexpr_for(Fn&& fn, Args&&...args) {
 }
 #endif
 
-template<typename T> struct tpa_tuple_size : public std::tuple_size<std::remove_cvref_t<T>> {};
-template<typename T> static constexpr size_t tpa_tuple_size_v = tpa_tuple_size<T>::value;
+template<typename T> struct tpa_tuple_size :
+    std::conditional_t<tuple_like<T>,
+        std::tuple_size<std::remove_cvref_t<T>>,
+        std::integral_constant<size_t, 0>> {};
+template<typename T> static constexpr size_t tpa_tuple_size_v = tpa_tuple_size<std::remove_cvref_t<T>>::value;
 
 TP_EXIT_NS

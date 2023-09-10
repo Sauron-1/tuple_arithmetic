@@ -8,16 +8,30 @@ TP_ENTER_NS
 
 // Unary operation
 namespace detail {
-    template<typename Op, tuple_like Tp, std::size_t...I>
-    FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp, std::index_sequence<I...>) {
-        using std::get;
-        return TP_CONVERT(std::make_tuple(op(get<I>(tp))...));
+    template<typename Op, typename Tp, std::size_t...I>
+    FORCE_INLINE constexpr auto apply_unary_op_impl(Op&& op, Tp&& tp, std::index_sequence<I...>) {
+        if constexpr (tuple_like<Tp>) {
+            constexpr_for<0, sizeof...(I), 1>([&](auto J) {
+                 static_assert(not tuple_like<decltype(get<J>(tp))> or tpa_tuple_size_v<decltype(get<J>(tp))> > 0);
+            });
+            return TP_CONVERT(std::make_tuple(
+                        apply_unary_op_impl(
+                            std::forward<Op>(op),
+                            get<I>(std::forward<Tp>(tp)),
+                            std::make_index_sequence<tpa_tuple_size_v<decltype(get<I>(tp))>>{}) ... ));
+        }
+        else {
+            static_assert(not tuple_like<Tp>);
+            static_assert(not tuple_like<std::remove_cvref_t<Tp>>);
+            static_assert(sizeof...(I) == 0);
+            return op(std::forward<Tp>(tp));
+        }
     }
 }
 template<typename Op, tuple_like Tp>
 FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
     using std::get;
-    return detail::apply_unary_op(
+    return detail::apply_unary_op_impl(
             std::forward<Op>(op), std::forward<Tp>(tp),
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tp>>::value>{});
 }

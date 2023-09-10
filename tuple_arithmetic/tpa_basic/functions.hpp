@@ -48,14 +48,15 @@ namespace detail {
 namespace detail {
     template<tuple_like T, size_t...N>
     FORCE_INLINE auto to_array_impl(T&& tp, std::index_sequence<N...>) {
-        return std::array<std::tuple_element_t<0, T>, sizeof...(N)>{ get<N>(tp)... };
+        return std::array<std::tuple_element_t<0, std::remove_cvref_t<T>>, sizeof...(N)>{ get<N>(tp)... };
     }
 }
 
 template<tuple_like T>
 FORCE_INLINE decltype(auto) to_array(T&& tp) {
-    if constexpr (same_value_tuple<T> and not is_const_tuple_v<std::remove_cvref_t<T>>) {
-        return detail::to_array_impl(std::forward<T>(tp), std::make_index_sequence<std::tuple_size_v<T>>{});
+    using T_nocv = std::remove_cvref_t<T>;
+    if constexpr (same_value_tuple<T_nocv> and not is_const_tuple_v<T_nocv>) {
+        return detail::to_array_impl(std::forward<T>(tp), std::make_index_sequence<std::tuple_size_v<T_nocv>>{});
     }
     else {
         return std::forward<T>(tp);

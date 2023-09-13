@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(tuple_arithmetic)
 
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "build tuple_arithmetic tests" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

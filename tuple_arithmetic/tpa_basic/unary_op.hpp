@@ -10,6 +10,7 @@ TP_ENTER_NS
 namespace detail {
     template<typename Op, typename Tp, std::size_t...I>
     FORCE_INLINE constexpr auto apply_unary_op_impl(Op&& op, Tp&& tp, std::index_sequence<I...>) {
+        using std::get;
         if constexpr (tuple_like<Tp>) {
             constexpr_for<0, sizeof...(I), 1>([&](auto J) {
                  static_assert(not tuple_like<decltype(get<J>(tp))> or tpa_tuple_size_v<decltype(get<J>(tp))> > 0);

@@ -21,9 +21,12 @@ if(NOT xsimd_FOUND)
     FetchContent_Declare(
         xsimd
         GIT_REPOSITORY https://github.com/xtensor-stack/xsimd.git
-        GIT_TAG        v11.1.0
+        GIT_TAG        8ffcae81fc57a6cd05abddc2cdf573bda7c7d44a
     )
+    set(BUILD_TESTS_TMP ${BUILD_TESTS})
+    set(BUILD_TESTS OFF)
     FetchContent_MakeAvailable(xsimd)
+    set(BUILD_TESTS ${BUILD_TESTS_TMP})
 endif()
 # Work around for xsimd generating "-lxsimd" flag
 target_include_directories(tuple_arithmetic INTERFACE ${xsimd_INCLUDE_DIRS})

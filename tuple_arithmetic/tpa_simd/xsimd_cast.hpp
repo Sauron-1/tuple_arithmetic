@@ -74,7 +74,7 @@ FORCE_INLINE constexpr decltype(auto) to_simd_bool(Tp&& tp) {
     else {
         using bsimd_t = typename simd_t::batch_bool_type;
         uint64_t mask;
-        tpa::constexpr_for<0, N, 1>([&mask, &tp](auto I) {
+        constexpr_for<0, N, 1>([&mask, &tp](auto I) {
             constexpr size_t i = decltype(I)::value;
             mask |= (get<i>(tp) ? 1ull : 0ull) << i;
         });
@@ -95,6 +95,12 @@ FORCE_INLINE constexpr auto to_simd_bool(const xsimd::batch_bool<T, A>& bsimd) {
     }
     else
         return xsimd::batch_bool_cast<std::remove_cvref_t<To>>(bsimd);
+}
+
+template<typename T, typename A, typename Src>
+FORCE_INLINE constexpr auto repeat_as(Src&& src, const xsimd::batch<T, A>& simd) {
+    constexpr size_t N = sizeof(xsimd::batch<T, A>)/sizeof(T);
+    return to_simd(const_tuple<Src, N>(src));
 }
 
 template<typename...T> struct final_type;

@@ -1,5 +1,6 @@
 #include <concepts>
 #include <type_traits>
+#include <utility>
 #include <xsimd/xsimd.hpp>
 #include "../tpa_basic/basics.hpp"
 #include "xsimd_cast.hpp"
@@ -272,13 +273,30 @@ FORCE_INLINE constexpr auto select(T1&& v1, T2&& v2, T3&& v3) {
 
 
 template<typename T>
-FORCE_INLINE constexpr auto to_array_deep(T&& tp) {
+FORCE_INLINE constexpr decltype(auto) to_array_deep(T&& tp) {
     if constexpr (xsimd::is_batch<std::remove_cvref_t<T>>::value)
         return to_array(tp);
     else if constexpr (tuple_like<T>)
         return apply_unary_op([](auto&& v) { return to_array_deep(v); }, std::forward<T>(tp));
     else
         return std::forward<T>(tp);
+}
+
+template<typename Tp>
+FORCE_INLINE constexpr decltype(auto) to_simd_deep(Tp&& tp) {
+    using T = std::remove_cvref_t<Tp>;
+    if constexpr (tuple_like<T>) {
+        if constexpr (same_type_tuple<T> and
+                has_simd<std::tuple_element_t<0, T>, std::tuple_size_v<T>>) {
+            return to_simd(std::forward<Tp>(tp));
+        }
+        else {
+            return apply_unary_op([](auto&& v) { return to_simd_deep(std::forward<decltype(v)>(v)); }, std::forward<Tp>(tp));
+        }
+    }
+    else {
+        return std::forward<Tp>(tp);
+    }
 }
 
 template<typename T, typename A>

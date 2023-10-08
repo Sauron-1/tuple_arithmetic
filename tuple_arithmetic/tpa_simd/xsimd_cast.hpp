@@ -15,7 +15,7 @@ FORCE_INLINE constexpr auto to_simd(Tp&& tp) {
     constexpr size_t N = std::tuple_size_v<std::remove_cvref_t<Tp>>;
     using simd_t = xsimd::make_sized_batch_t<std::remove_cvref_t<T>, N>;
     if constexpr (std::is_void_v<simd_t>)
-        return to_array(cast<std::remove_cvref<T>>(std::forward<Tp>(tp)));
+        return to_array(cast<std::remove_cvref_t<T>>(std::forward<Tp>(tp)));
     else {
         if constexpr (is_const_tuple_v<Tp>)
             return simd_t(tp[0]);
@@ -95,12 +95,6 @@ FORCE_INLINE constexpr auto to_simd_bool(const xsimd::batch_bool<T, A>& bsimd) {
     }
     else
         return xsimd::batch_bool_cast<std::remove_cvref_t<To>>(bsimd);
-}
-
-template<typename T, typename A, typename Src>
-FORCE_INLINE constexpr auto repeat_as(Src&& src, const xsimd::batch<T, A>& simd) {
-    constexpr size_t N = sizeof(xsimd::batch<T, A>)/sizeof(T);
-    return to_simd(const_tuple<Src, N>(src));
 }
 
 template<typename...T> struct final_type;

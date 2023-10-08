@@ -3,6 +3,7 @@
 #include <utility>
 #include <xsimd/xsimd.hpp>
 #include "../tpa_basic/basics.hpp"
+#include "../tpa_basic/const_tuple.hpp"
 #include "xsimd_cast.hpp"
 
 #pragma once
@@ -288,7 +289,7 @@ FORCE_INLINE constexpr decltype(auto) to_simd_deep(Tp&& tp) {
     if constexpr (tuple_like<T>) {
         if constexpr (same_type_tuple<T> and
                 has_simd<std::tuple_element_t<0, T>, std::tuple_size_v<T>>) {
-            return to_simd(std::forward<Tp>(tp));
+            return to_simd<std::tuple_element_t<0, T>>(std::forward<Tp>(tp));
         }
         else {
             return apply_unary_op([](auto&& v) { return to_simd_deep(std::forward<decltype(v)>(v)); }, std::forward<Tp>(tp));
@@ -316,6 +317,13 @@ template<typename T, typename A>
 FORCE_INLINE constexpr auto operator~(const xsimd::batch_bool<T, A>& b) {
     constexpr size_t size = xsimd::batch_bool<T, A>::size;
     return xsimd::batch_bool<T, A>::from_mask(~b.mask() & (1ull >> (64-size)));
+}
+
+
+template<typename T, typename A, typename Src>
+FORCE_INLINE constexpr auto repeat_as(Src&& src, const xsimd::batch<T, A>& simd) {
+    constexpr size_t N = sizeof(xsimd::batch<T, A>)/sizeof(T);
+    return to_simd_deep(const_tuple<Src, N>{src});
 }
 
 

@@ -42,7 +42,6 @@ TP_MAP_UNARY_STD_FN(tan);
 TP_MAP_UNARY_STD_FN(asin);
 TP_MAP_UNARY_STD_FN(acos);
 TP_MAP_UNARY_STD_FN(atan);
-TP_MAP_UNARY_STD_FN(atan2);
 
 TP_MAP_UNARY_STD_FN(sinh);
 TP_MAP_UNARY_STD_FN(cosh);
@@ -81,6 +80,7 @@ TP_MAKE_BINARY_OP(operator||, a || b);
 TP_MAKE_BINARY_OP(operator&&, a && b);
 
 TP_MAP_BINARY_STD_FN(pow);
+TP_MAP_BINARY_STD_FN(atan2);
 
 TP_MAP_BINARY_STD_FN(fdim);
 TP_MAP_BINARY_STD_FN(fmin);

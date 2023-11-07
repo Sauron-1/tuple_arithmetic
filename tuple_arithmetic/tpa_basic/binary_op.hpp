@@ -11,7 +11,6 @@ namespace detail {
     template<typename Op, tuple_like T1, tuple_like T2, std::size_t...I>
         requires(tpa_tuple_size_v<T1> == tpa_tuple_size_v<T2>)
     FORCE_INLINE constexpr auto apply_binary_op_impl(Op&& op, T1&& t1, T2&& t2, std::index_sequence<I...>) {
-        using std::get;
         return TP_CONVERT(std::make_tuple(op(
                     get<I>(std::forward<T1>(t1)),
                     get<I>(std::forward<T2>(t2)))...));
@@ -86,7 +85,6 @@ FORCE_INLINE constexpr auto m_fn2(Tp1&& tp1, Tm T::*member, Tp2&& tp2) {
 template<tuple_like Tp1, tuple_like Tp2>
     requires(std::tuple_size_v<std::remove_cvref_t<Tp1>> == 2 && std::tuple_size_v<std::remove_cvref_t<Tp2>> == 2)
 FORCE_INLINE constexpr auto cross(Tp1&& tp1, Tp2&& tp2) {
-    using std::get;
     return get<0>(tp1) * get<1>(tp2) - 
            get<1>(tp1) * get<0>(tp2);
 }

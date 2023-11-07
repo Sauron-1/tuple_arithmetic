@@ -64,7 +64,6 @@ template<tuple_like Tp, typename T, typename A>
 FORCE_INLINE constexpr auto assign(Tp&& tp, const xsimd::batch<T, A>& simd) {
     const T* ptr = reinterpret_cast<const T*>(&simd);
     constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
-        using std::get;
         constexpr size_t i = decltype(I)::value;
         get<I>(std::forward<Tp>(tp)) = ptr[i];
     });
@@ -74,7 +73,6 @@ template<tuple_like Tp, typename T, typename A>
 FORCE_INLINE constexpr auto assign(Tp&& tp, xsimd::batch<T, A>&& simd) {
     const T* ptr = reinterpret_cast<const T*>(&simd);
     constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
-        using std::get;
         constexpr size_t i = decltype(I)::value;
         get<I>(std::forward<Tp>(tp)) = ptr[i];
     });
@@ -84,7 +82,6 @@ template<tuple_like Tp, typename T, typename A>
 FORCE_INLINE constexpr auto assign(Tp&& tp, xsimd::batch<T, A>& simd) {
     const T* ptr = reinterpret_cast<const T*>(&simd);
     constexpr_for<0, std::tuple_size_v<std::remove_cvref_t<Tp>>, 1>([&tp, ptr](auto I) {
-        using std::get;
         constexpr size_t i = decltype(I)::value;
         get<I>(std::forward<Tp>(tp)) = ptr[i];
     });

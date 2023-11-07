@@ -77,7 +77,6 @@ FORCE_INLINE auto repeat_as(T&& t, To&&) {
 // Permutation
 template<size_t...Idx, tuple_like Tp>
 FORCE_INLINE constexpr auto permute(Tp&& tp) {
-    using std::get;
     return TP_CONVERT(std::forward_as_tuple(get<Idx>(std::forward<Tp>(tp))...));
 }
 

@@ -10,7 +10,6 @@ TP_ENTER_NS
 namespace detail {
     template<typename Op, typename Tp, std::size_t...I>
     FORCE_INLINE constexpr auto apply_unary_op_impl(Op&& op, Tp&& tp, std::index_sequence<I...>) {
-        using std::get;
         if constexpr (tuple_like<Tp>) {
             constexpr_for<0, sizeof...(I), 1>([&](auto J) {
                  static_assert(not tuple_like<decltype(get<J>(tp))> or tpa_tuple_size_v<decltype(get<J>(tp))> > 0);
@@ -31,7 +30,6 @@ namespace detail {
 }
 template<typename Op, tuple_like Tp>
 FORCE_INLINE constexpr auto apply_unary_op(Op&& op, Tp&& tp) {
-    using std::get;
     return detail::apply_unary_op_impl(
             std::forward<Op>(op), std::forward<Tp>(tp),
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tp>>::value>{});
@@ -68,7 +66,6 @@ FORCE_INLINE constexpr auto cast(Tp&& tp) {
 
 template<size_t Idx, tuple_like Tp>
 FORCE_INLINE constexpr auto vget(Tp&& tp) {
-    using std::get;
     return foreach(
             std::forward<Tp>(tp),
             [](auto&& v) -> decltype(auto) { return get<Idx>(std::forward<decltype(v)>(v)); });

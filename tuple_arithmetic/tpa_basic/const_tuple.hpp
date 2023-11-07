@@ -37,6 +37,12 @@ struct const_tuple {
 template<typename T> struct is_const_tuple : public std::false_type {};
 template<typename T, size_t N> struct is_const_tuple<const_tuple<T, N>> : public std::true_type {};
 template<typename T> static constexpr bool is_const_tuple_v = is_const_tuple<T>::value;
+
+template<size_t idx, typename T>
+    requires( idx < std::tuple_size_v<std::remove_cvref_t<T>> and TP_IN_NS(is_const_tuple_v)<std::remove_cvref_t<T>> )
+FORCE_INLINE constexpr decltype(auto) get(T&& ct) {
+    return ct[idx];
+}
 TP_EXIT_NS
 
 namespace std {
@@ -48,10 +54,4 @@ template<size_t idx, typename T, size_t N>
 struct tuple_element<idx, TP_IN_NS(const_tuple)<T, N>> {
     using type = T&&;
 };
-
-template<size_t idx, typename T>
-    requires( idx < tuple_size_v<remove_cvref_t<T>> and TP_IN_NS(is_const_tuple_v)<remove_cvref_t<T>> )
-FORCE_INLINE constexpr decltype(auto) get(T&& ct) {
-    return ct[idx];
-}
 }  // namespace std

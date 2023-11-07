@@ -3,12 +3,9 @@
 #include <catch2/catch_session.hpp>
 #include <type_traits>
 
-using namespace std;
-using namespace tpa;
-
 TEST_CASE( "ptr tuple", "[ptr tuple]" ) {
     double *ptr = new double[3];
-    auto pt = make_ptr_tuple<3>(ptr);
+    auto pt = tpa::make_ptr_tuple<3>(ptr);
 
     SECTION( "assign with value" ) {
         pt = 2;

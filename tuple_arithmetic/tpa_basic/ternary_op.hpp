@@ -11,7 +11,6 @@ namespace detail {
     template<typename Op, tuple_like T1, tuple_like T2, tuple_like T3, std::size_t...I>
         requires(tpa_tuple_size_v<T1> == tpa_tuple_size_v<T2> and tpa_tuple_size_v<T1> == tpa_tuple_size_v<T3>)
     FORCE_INLINE constexpr auto apply_ternary_op_impl(Op&& op, T1&& t1, T2&& t2, T3&& t3, std::index_sequence<I...>) {
-        using std::get;
         return TP_CONVERT(std::make_tuple(op(get<I>(t1), get<I>(t2), get<I>(t3))...));
     }
 }

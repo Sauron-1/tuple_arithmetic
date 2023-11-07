@@ -84,6 +84,24 @@ FORCE_INLINE auto make_ptr_tuple(std::array<T, num> data) { return ptr_tuple<T, 
 template<size_t N, typename T, size_t num>
 FORCE_INLINE auto make_ptr_tuple(std::array<T, num> data, std::ptrdiff_t offset) { return ptr_tuple<T, N>(data, offset); }
 
+    template<size_t idx, typename T, size_t N>
+        requires (idx < N)
+    FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>& pt) {
+        return pt[idx];
+    }
+
+template<size_t idx, typename T, size_t N>
+    requires (idx < N)
+FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>&& pt) {
+    return pt[idx];
+}
+
+template<size_t idx, typename T, size_t N>
+    requires (idx < N)
+FORCE_INLINE constexpr const T& get(const TP_IN_NS(ptr_tuple)<T, N>& pt) {
+    return pt[idx];
+}
+
 TP_EXIT_NS
 
 namespace std {
@@ -94,22 +112,4 @@ namespace std {
     struct tuple_element<idx, TP_IN_NS(ptr_tuple)<T, N>> {
         using type = T;
     };
-
-    template<size_t idx, typename T, size_t N>
-        requires (idx < N)
-    FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>& pt) {
-        return pt[idx];
-    }
-
-    template<size_t idx, typename T, size_t N>
-        requires (idx < N)
-    FORCE_INLINE constexpr T& get(TP_IN_NS(ptr_tuple)<T, N>&& pt) {
-        return pt[idx];
-    }
-
-    template<size_t idx, typename T, size_t N>
-        requires (idx < N)
-    FORCE_INLINE constexpr const T& get(const TP_IN_NS(ptr_tuple)<T, N>& pt) {
-        return pt[idx];
-    }
 }

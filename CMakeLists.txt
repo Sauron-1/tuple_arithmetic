@@ -20,9 +20,9 @@ if(NOT xsimd_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         xsimd
-        URL https://github.com/xtensor-stack/xsimd/archive/refs/tags/11.1.0.zip
+        URL https://github.com/xtensor-stack/xsimd/archive/refs/tags/13.2.0.zip
         TLS_VERIFY true
-        URL_HASH MD5=3b17c8dd08724b025f8bc618590e085f
+        URL_HASH MD5=0d0b72ff89144f803a27fdbbcd705d58
     )
     set(BUILD_TESTS_TMP ${BUILD_TESTS})
     set(BUILD_TESTS OFF)
